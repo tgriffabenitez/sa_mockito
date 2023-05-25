@@ -6,28 +6,29 @@ import com.sistemasactivos.mockito.repositorios.ExamenRepositorio;
 import com.sistemasactivos.mockito.repositorios.PreguntaRepositorio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class) // Con esto habilito las anotaciones de mockito
 class ExamenServicioImplTest {
 
-    ExamenServicio examenServicio;
+    @Mock // esto es para que se cree un mock de la clase o interfaz que se le indique
     ExamenRepositorio examenRepositorio;
+
+    @Mock // esto es para que se cree un mock de la clase o interfaz que se le indique
     PreguntaRepositorio preguntaRepositorio;
 
-    @BeforeEach
-    void setUp() {
-        this.examenRepositorio = mock(ExamenRepositorio.class); // indico el nombre de la clase o interfaz que quiero mockear
-        this.preguntaRepositorio = mock(PreguntaRepositorio.class);
-        this.examenServicio = new ExamenServicioImpl(examenRepositorio, preguntaRepositorio);
-    }
+    @InjectMocks // esto es para que se inyecten los mocks en la clase que se le indique
+    ExamenServicioImpl examenServicio;
 
     @Test
     void findExamenPorNombre() {
@@ -71,5 +72,37 @@ class ExamenServicioImplTest {
 
         assertEquals(5, examen.getPreguntas().size());
         assertTrue(examen.getPreguntas().contains("Aritmetica"));
+    }
+
+    @Test
+    void testPreguntaExamenVerificar() {
+        when(examenRepositorio.findAll()).thenReturn(Datos.EXAMENES);
+        when(preguntaRepositorio.findPreguntaPorExamenId(anyLong())).thenReturn(Datos.PREGUNTAS);
+
+        Examen examen = examenServicio.findExamenPorNombreConPreguntas("Matemáticas");
+
+        assertEquals(5, examen.getPreguntas().size());
+        assertTrue(examen.getPreguntas().contains("Aritmetica"));
+
+        // verifico que el metodo findAll() de la clase ExamenRepositorio se haya llamado al menos una vez
+        verify(examenRepositorio).findAll();
+
+        // verifico que el metodo findPreguntaPorExamenId() de la clase PreguntaRepositorio se haya llamado al menos una vez
+        verify(preguntaRepositorio).findPreguntaPorExamenId(anyLong());
+    }
+
+    @Test
+    void testNoExisteExamenVerify() {
+        when(examenRepositorio.findAll()).thenReturn(Collections.emptyList());
+        when(preguntaRepositorio.findPreguntaPorExamenId(anyLong())).thenReturn(Datos.PREGUNTAS);
+
+        Examen examen = examenServicio.findExamenPorNombreConPreguntas("Matemáticas");
+        assertNull(examen);
+
+        // verifico que el metodo findAll() de la clase ExamenRepositorio se haya llamado al menos una vez
+        verify(examenRepositorio).findAll();
+
+        // verifico que el metodo findPreguntaPorExamenId() de la clase PreguntaRepositorio se haya llamado al menos una vez
+        verify(preguntaRepositorio).findPreguntaPorExamenId(anyLong());
     }
 }
