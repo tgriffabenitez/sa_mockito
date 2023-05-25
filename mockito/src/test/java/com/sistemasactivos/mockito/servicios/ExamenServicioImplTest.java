@@ -1,7 +1,9 @@
 package com.sistemasactivos.mockito.servicios;
 
+import com.sistemasactivos.mockito.Datos;
 import com.sistemasactivos.mockito.modelos.Examen;
 import com.sistemasactivos.mockito.repositorios.ExamenRepositorio;
+import com.sistemasactivos.mockito.repositorios.PreguntaRepositorio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -10,18 +12,21 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ExamenServicioImplTest {
 
-    ExamenServicio servicio;
-    ExamenRepositorio repositorio;
+    ExamenServicio examenServicio;
+    ExamenRepositorio examenRepositorio;
+    PreguntaRepositorio preguntaRepositorio;
 
     @BeforeEach
     void setUp() {
-        this.repositorio = mock(ExamenRepositorio.class); // indico el nombre de la clase o interfaz que quiero mockear
-        this.servicio = new ExamenServicioImpl(repositorio);
+        this.examenRepositorio = mock(ExamenRepositorio.class); // indico el nombre de la clase o interfaz que quiero mockear
+        this.preguntaRepositorio = mock(PreguntaRepositorio.class);
+        this.examenServicio = new ExamenServicioImpl(examenRepositorio, preguntaRepositorio);
     }
 
     @Test
@@ -34,16 +39,11 @@ class ExamenServicioImplTest {
          *
          * Solo se le pueden hacer mocks a los metodos que son publicos y no son estaticos.
          */
-        List<Examen> datos = Arrays.asList(
-                new Examen(5L, "Matemáticas"),
-                new Examen(6L, "Lenguaje"),
-                new Examen(7L, "Historia")
-        );
 
-        // Esto se lee: cuando el metodo findAll() de la clase ExamenRepositorio se llame, entonces devolver la lista de examenes.
-        when(repositorio.findAll()).thenReturn(datos);
+         // Esto se lee: cuando el metodo findAll() de la clase ExamenRepositorio se llame, entonces devolver la lista de examenes.
+        when(examenRepositorio.findAll()).thenReturn(Datos.EXAMENES);
 
-        Optional<Examen> examen = servicio.findExamenPorNombre("Matemáticas");
+        Optional<Examen> examen = examenServicio.findExamenPorNombre("Matemáticas");
 
         assertTrue(examen.isPresent());
         assertEquals(5L, examen.orElseThrow().getId());
@@ -55,10 +55,21 @@ class ExamenServicioImplTest {
     void findExamenPorNombreListaVacia() {
         List<Examen> datos = List.of();
 
-        when(repositorio.findAll()).thenReturn(datos);
+        when(examenRepositorio.findAll()).thenReturn(datos);
 
-        Optional<Examen> examen = servicio.findExamenPorNombre("Matemáticas");
+        Optional<Examen> examen = examenServicio.findExamenPorNombre("Matemáticas");
 
         assertFalse(examen.isPresent());
+    }
+
+    @Test
+    void testPreguntaExamen() {
+        when(examenRepositorio.findAll()).thenReturn(Datos.EXAMENES);
+        when(preguntaRepositorio.findPreguntaPorExamenId(anyLong())).thenReturn(Datos.PREGUNTAS);
+
+        Examen examen = examenServicio.findExamenPorNombreConPreguntas("Matemáticas");
+
+        assertEquals(5, examen.getPreguntas().size());
+        assertTrue(examen.getPreguntas().contains("Aritmetica"));
     }
 }
