@@ -13,16 +13,10 @@ public class ExamenServicioImpl implements ExamenServicio {
     }
 
     @Override
-    public Examen findExamenPorNombre(String nombre) {
-        Optional<Examen> examenOptional = repositorio.findAll()
+    public Optional<Examen> findExamenPorNombre(String nombre) {
+        return repositorio.findAll()
                 .stream()
                 .filter(examen -> examen.getNombre().equals(nombre))
                 .findFirst();
-
-        Examen examen = null;
-        if (examenOptional.isPresent())
-            examen = examenOptional.orElseThrow();
-
-        return examen;
     }
 }

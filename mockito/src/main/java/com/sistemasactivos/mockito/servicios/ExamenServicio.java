@@ -2,6 +2,8 @@ package com.sistemasactivos.mockito.servicios;
 
 import com.sistemasactivos.mockito.modelos.Examen;
 
+import java.util.Optional;
+
 public interface ExamenServicio {
-    Examen findExamenPorNombre(String nombre);
+    Optional<Examen> findExamenPorNombre(String nombre);
 }
