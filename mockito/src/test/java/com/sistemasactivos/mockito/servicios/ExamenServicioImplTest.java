@@ -105,4 +105,20 @@ class ExamenServicioImplTest {
         // verifico que el metodo findPreguntaPorExamenId() de la clase PreguntaRepositorio se haya llamado al menos una vez
         verify(preguntaRepositorio).findPreguntaPorExamenId(anyLong());
     }
+
+    @Test
+    void testGuardarExamen() {
+        Examen newExamen = Datos.EXAMEN;
+        newExamen.setPreguntas(Datos.PREGUNTAS);
+
+
+        when(examenRepositorio.guardar(any(Examen.class))).thenReturn(Datos.EXAMEN);
+        Examen examen = examenServicio.guardar(newExamen);
+
+        assertNotNull(examen.getId());
+        assertEquals(8L, examen.getId());
+        assertEquals("Física", examen.getNombre());
+        verify(examenRepositorio).guardar(any(Examen.class));
+        verify(preguntaRepositorio).guardarVarias(anyList());
+    }
 }
