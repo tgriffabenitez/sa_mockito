@@ -4,13 +4,13 @@ import com.sistemasactivos.mockito.Datos;
 import com.sistemasactivos.mockito.modelos.Examen;
 import com.sistemasactivos.mockito.repositorios.ExamenRepositorio;
 import com.sistemasactivos.mockito.repositorios.PreguntaRepositorio;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import java.util.*;
 
@@ -41,7 +41,7 @@ class ExamenServicioImplTest {
          * Solo se le pueden hacer mocks a los metodos que son publicos y no son estaticos.
          */
 
-         // Esto se lee: cuando el metodo findAll() de la clase ExamenRepositorio se llame, entonces devolver la lista de examenes.
+        // Esto se lee: cuando el metodo findAll() de la clase ExamenRepositorio se llame, entonces devolver la lista de examenes.
         when(examenRepositorio.findAll()).thenReturn(Datos.EXAMENES);
 
         Optional<Examen> examen = examenServicio.findExamenPorNombre("Matemáticas");
@@ -108,13 +108,33 @@ class ExamenServicioImplTest {
 
     @Test
     void testGuardarExamen() {
+
+        // --- GIVEN ---
         Examen newExamen = Datos.EXAMEN;
         newExamen.setPreguntas(Datos.PREGUNTAS);
 
+        /*
+         * Cuando se ejecuta el metodo guardar() de la clase ExamenRepositorio, se ejecuta el metodo anonimo que se
+         * encuentra dentro del metodo then(), y se le pasa como argumento el examen que se le pasa al metodo guardar().
+         *
+         * El metodo .getArgument(0) devuelve el primer argumento que se le pasa al metodo guardar(), que en este caso es
+         * el examen. Luego se le setea el id al examen, y se lo devuelve.
+         */
+        when(examenRepositorio.guardar(any(Examen.class))).then(new Answer<Examen>() {
+            Long secuencia = 8L; // inicializo el id en 8, porque el ultimo id de la lista Datos.EXAMENES es 7
 
-        when(examenRepositorio.guardar(any(Examen.class))).thenReturn(Datos.EXAMEN);
+            @Override
+            public Examen answer(InvocationOnMock invocationOnMock) throws Throwable {
+                Examen examen = invocationOnMock.getArgument(0);
+                examen.setId(secuencia++); // le asigno el id y lo incremento en 1
+                return examen;
+            }
+        });
+
+        /// --- WHEN ---
         Examen examen = examenServicio.guardar(newExamen);
 
+        // --- THEN ---
         assertNotNull(examen.getId());
         assertEquals(8L, examen.getId());
         assertEquals("Física", examen.getNombre());

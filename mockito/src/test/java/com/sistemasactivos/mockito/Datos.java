@@ -20,5 +20,8 @@ public class Datos {
             "Geometria"
     );
 
-    public final static Examen EXAMEN = new Examen(8L, "Física");
+    /*
+     * Dejo el id en null ya que quiero testearlo de forma autoincremental
+     */
+    public final static Examen EXAMEN = new Examen(null, "Física");
 }
