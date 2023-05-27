@@ -19,4 +19,6 @@ public class Datos {
             "Trigonometria",
             "Geometria"
     );
+
+    public final static Examen EXAMEN = new Examen(8L, "Física");
 }
