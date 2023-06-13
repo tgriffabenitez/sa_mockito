@@ -141,4 +141,18 @@ class ExamenServicioImplTest {
         verify(examenRepositorio).guardar(any(Examen.class));
         verify(preguntaRepositorio).guardarVarias(anyList());
     }
+
+    @Test
+    void testManejoException() {
+        // --- GIVEN ---
+        when(examenRepositorio.findAll()).thenReturn(Datos.EXAMENES);
+        when(preguntaRepositorio.findPreguntaPorExamenId(anyLong())).thenThrow(IllegalArgumentException.class);
+
+        // --- THEN ---
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            examenServicio.findExamenPorNombreConPreguntas("Matemáticas");
+        });
+
+        assertEquals(IllegalArgumentException.class, exception.getClass());
+    }
 }
